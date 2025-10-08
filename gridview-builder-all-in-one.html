@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flutter GridView Builder</title>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@5.0.0/dist/full.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-base-100">
+  <div class="container mx-auto p-4">
+    <div class="flex gap-4 h-screen">
+      <div class="w-80 flex flex-col gap-4 overflow-auto">
+        <div class="text-center mb-2">
+          <h3 class="text-xl font-bold text-primary">GridView Controls</h3>
+          <p class="text-sm opacity-70">Adjust parameters to see live preview</p>
+        </div>
+        
+        <div class="card bg-base-200 shadow-sm">
+          <div class="card-body p-4 gap-4">
+            <div>
+              <label class="label">
+                <span class="label-text font-semibold">Cross Axis Count</span>
+                <span class="label-text-alt badge badge-primary" id="value-columns">3</span>
+              </label>
+              <input type="range" min="2" max="6" value="3" class="range range-primary range-sm" id="slider-columns">
+              <div class="text-xs opacity-60 mt-1">Number of columns in the grid</div>
+            </div>
+            <div>
+              <label class="label">
+                <span class="label-text font-semibold">Main Axis Spacing</span>
+                <span class="label-text-alt badge badge-secondary" id="value-main-spacing">16</span>
+              </label>
+              <input type="range" min="0" max="40" value="16" class="range range-secondary range-sm" id="slider-main-spacing">
+              <div class="text-xs opacity-60 mt-1">Vertical spacing between items</div>
+            </div>
+            <div>
+              <label class="label">
+                <span class="label-text font-semibold">Cross Axis Spacing</span>
+                <span class="label-text-alt badge badge-secondary" id="value-cross-spacing">16</span>
+              </label>
+              <input type="range" min="0" max="40" value="16" class="range range-secondary range-sm" id="slider-cross-spacing">
+              <div class="text-xs opacity-60 mt-1">Horizontal spacing between items</div>
+            </div>
+            <div>
+              <label class="label">
+                <span class="label-text font-semibold">Child Aspect Ratio</span>
+                <span class="label-text-alt badge badge-accent" id="value-aspect-ratio">1.0</span>
+              </label>
+              <input type="range" min="0.5" max="2" step="0.1" value="1.0" class="range range-accent range-sm" id="slider-aspect-ratio">
+              <div class="text-xs opacity-60 mt-1">Width to height ratio of each cell</div>
+            </div>
+            <div>
+              <label class="label">
+                <span class="label-text font-semibold">Padding</span>
+                <span class="label-text-alt badge badge-info" id="value-padding">16</span>
+              </label>
+              <input type="range" min="0" max="40" value="16" class="range range-info range-sm" id="slider-padding">
+              <div class="text-xs opacity-60 mt-1">Padding around the entire grid</div>
+            </div>
+            <div>
+              <label class="label">
+                <span class="label-text font-semibold">Item Count</span>
+                <span class="label-text-alt badge" id="value-item-count">12</span>
+              </label>
+              <input type="range" min="4" max="24" value="12" class="range range-sm" id="slider-item-count">
+              <div class="text-xs opacity-60 mt-1">Number of items to display</div>
+            </div>
+          </div>
+        </div>
+        <button id="btn-copy-code" class="btn btn-primary btn-block">📋 Copy Flutter Code</button>
+      </div>
+
+      <div class="flex-1 flex flex-col gap-4 overflow-auto">
+        <div class="card bg-base-200 shadow-sm flex-1">
+          <div class="card-body p-4">
+            <h4 class="font-bold text-lg mb-2">Live Preview</h4>
+            <div id="grid-preview" class="bg-base-100 rounded-lg overflow-auto" style="padding: 16px;">
+              <div id="grid-container"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card bg-base-200 shadow-sm">
+          <div class="card-body p-4">
+            <h4 class="font-bold text-lg mb-2">Generated Flutter Code</h4>
+            <pre id="code-output" class="bg-base-300 p-4 rounded-lg text-sm overflow-x-auto"><code></code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      columns: 3,
+      mainSpacing: 16,
+      crossSpacing: 16,
+      aspectRatio: 1.0,
+      padding: 16,
+      itemCount: 12
+    };
+
+    function updateGrid() {
+      const container = document.getElementById('grid-container');
+      const colors = ['bg-primary text-primary-content', 'bg-secondary text-secondary-content', 'bg-accent text-accent-content'];
+      
+      let html = `<div style="display: grid; grid-template-columns: repeat(${state.columns}, 1fr); gap: ${state.mainSpacing}px;">`;
+      for (let i = 1; i <= state.itemCount; i++) {
+        const colorClass = colors[(i - 1) % 3];
+        html += `<div class="${colorClass} rounded-lg flex items-center justify-center font-bold" style="aspect-ratio: ${state.aspectRatio};">${i}</div>`;
+      }
+      html += '</div>';
+      container.innerHTML = html;
+      
+      document.getElementById('grid-preview').style.padding = `${state.padding}px`;
+    }
+
+    function updateCode() {
+      const code = `GridView.count(
+  crossAxisCount: ${state.columns},
+  mainAxisSpacing: ${state.mainSpacing},
+  crossAxisSpacing: ${state.crossSpacing},
+  childAspectRatio: ${state.aspectRatio},
+  padding: EdgeInsets.all(${state.padding}),
+  children: List.generate(${state.itemCount}, (index) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.blue,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Center(
+        child: Text(
+          '\${index + 1}',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }),
+)`;
+      document.querySelector('#code-output code').textContent = code;
+    }
+
+    function setupSlider(id, stateKey, valueId) {
+      const slider = document.getElementById(id);
+      const valueDisplay = document.getElementById(valueId);
+      
+      slider.addEventListener('input', (e) => {
+        const value = parseFloat(e.target.value);
+        state[stateKey] = value;
+        valueDisplay.textContent = value;
+        updateGrid();
+        updateCode();
+      });
+    }
+
+    setupSlider('slider-columns', 'columns', 'value-columns');
+    setupSlider('slider-main-spacing', 'mainSpacing', 'value-main-spacing');
+    setupSlider('slider-cross-spacing', 'crossSpacing', 'value-cross-spacing');
+    setupSlider('slider-aspect-ratio', 'aspectRatio', 'value-aspect-ratio');
+    setupSlider('slider-padding', 'padding', 'value-padding');
+    setupSlider('slider-item-count', 'itemCount', 'value-item-count');
+
+    document.getElementById('btn-copy-code').addEventListener('click', () => {
+      const code = document.querySelector('#code-output code').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = document.getElementById('btn-copy-code');
+        btn.textContent = '✓ Code Copied to Clipboard!';
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-success');
+        setTimeout(() => {
+          btn.textContent = '📋 Copy Flutter Code';
+          btn.classList.remove('btn-success');
+          btn.classList.add('btn-primary');
+        }, 2000);
+      });
+    });
+
+    updateGrid();
+    updateCode();
+  </script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+{
+  "name": "flutter-gridview-builder",
+  "version": "1.0.0",
+  "description": "Visual tool for experimenting with Flutter GridView layouts. Generate Dart code instantly.",
+  "main": "src/js/gridview-builder.js",
+  "scripts": {
+    "build": "npm run clean && npm run minify && npm run copy",
+    "clean": "rm -rf dist && mkdir -p dist",
+    "minify": "npm run minify:js && npm run minify:standalone",
+    "minify:js": "terser src/js/gridview-builder.js -o dist/gridview-builder.min.js -c -m --comments false",
+    "minify:standalone": "terser src/js/gridview-builder-standalone.js -o dist/gridview-builder-standalone.min.js -c -m --comments false",
+    "copy": "npm run copy:html && npm run copy:js",
+    "copy:html": "cp src/index.html dist/index.html && cp src/embed.html dist/embed.html",
+    "copy:js": "cp src/js/gridview-builder.js dist/gridview-builder.js && cp src/js/gridview-builder-standalone.js dist/gridview-builder-standalone.js",
+    "serve": "npx serve src -p 8000",
+    "serve:dist": "npx serve dist -p 8000",
+    "dev": "npm run serve",
+    "deploy:gh-pages": "npm run build && cp -r dist/* docs/ && git add docs && git commit -m 'Deploy to GitHub Pages' && git push"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/flutter-gridview-builder.git"
+  },
+  "keywords": [
+    "flutter",
+    "gridview",
+    "dart",
+    "code-generator",
+    "visual-tool",
+    "prototyping",
+    "ui-builder"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "terser": "^5.36.0",
+    "serve": "^14.2.4"
+  },
+  "files": [
+    "dist/",
+    "src/",
+    "README.md",
+    "CLAUDE.md",
+    "LICENSE"
+  ]
+}

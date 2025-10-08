@@ -36,23 +36,49 @@ A visual tool for experimenting with Flutter GridView layouts. Adjust parameters
 
 Visit the live demo: [Flutter GridView Builder](https://your-demo-url.com)
 
-## 📦 Installation
+## 📦 Installation & Usage
 
 ### Option 1: Use Online
 Simply visit the hosted version - no installation needed!
+- **Live Demo**: [Flutter GridView Builder](https://your-demo-url.com)
 
-### Option 2: Run Locally
-1. Download `gridview-builder.html`
-2. Open it in any modern web browser
-3. Start experimenting!
+### Option 2: Download Standalone Version
+Download `gridview-builder-all-in-one.html` and open it in your browser - no build step required!
 
-### Option 3: Host Yourself
+### Option 3: Run Locally (Development)
 ```bash
 # Clone the repository
 git clone https://github.com/yourusername/flutter-gridview-builder.git
+cd flutter-gridview-builder
 
-# Deploy to your hosting service
-# Works with: Netlify, Vercel, GitHub Pages, or any static host
+# Install dependencies (for build tools)
+npm install
+
+# Run development server
+npm run dev
+# Visit http://localhost:8000
+
+# Build for production
+npm run build
+# Output will be in /dist folder
+```
+
+### Option 4: Embed in Your Website
+See [WORDPRESS-EMBED.md](WORDPRESS-EMBED.md) for detailed instructions on embedding in WordPress or any website.
+
+**Quick Embed (Iframe):**
+```html
+<iframe src="https://yourdomain.com/dist/embed.html"
+        width="100%" height="800px"></iframe>
+```
+
+**Quick Embed (JavaScript Widget):**
+```html
+<div id="gridview-builder"></div>
+<script src="dist/gridview-builder-standalone.min.js"></script>
+<script>
+  new GridViewBuilder('#gridview-builder');
+</script>
 ```
 
 ## 💻 Usage
@@ -91,12 +117,32 @@ GridView.count(
 )
 ```
 
+## 📁 Project Structure
+
+```
+flutter-gridview-builder/
+├── src/                    # Source files
+│   ├── index.html         # Standalone application
+│   ├── embed.html         # Embeddable iframe version
+│   └── js/
+│       ├── gridview-builder.js            # Core widget (modular)
+│       └── gridview-builder-standalone.js # All-in-one widget
+├── dist/                  # Built/minified files (generated)
+├── docs/                  # GitHub Pages deployment
+├── gridview-builder-all-in-one.html  # Legacy single-file version
+├── package.json          # Build scripts and dependencies
+├── CLAUDE.md            # AI assistant guidance
+└── WORDPRESS-EMBED.md   # Embedding instructions
+```
+
 ## 🛠️ Technologies
 
 - **Tailwind CSS** - Utility-first CSS framework
 - **DaisyUI** - Tailwind CSS component library
 - **Vanilla JavaScript** - No framework dependencies
 - **HTML5** - Modern web standards
+- **Terser** - JavaScript minification
+- **npm** - Build tooling and scripts
 
 ## 🎨 Customization
 
@@ -129,6 +175,32 @@ class MyGridScreen extends StatelessWidget {
   }
 }
 ```
+
+## 🔨 Development
+
+### Available Scripts
+
+```bash
+npm run dev          # Start development server (port 8000)
+npm run build        # Build production files to /dist
+npm run serve:dist   # Preview production build
+npm run clean        # Clean dist folder
+```
+
+### Making Changes
+
+1. Edit files in `/src` directory
+2. Test locally with `npm run dev`
+3. Build with `npm run build`
+4. Minified files will be in `/dist`
+
+### Deployment to GitHub Pages
+
+```bash
+npm run deploy:gh-pages
+```
+
+This builds the project and copies files to `/docs` for GitHub Pages hosting.
 
 ## 🤝 Contributing
 

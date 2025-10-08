@@ -1,0 +1,270 @@
+/**
+ * Flutter GridView Builder Widget
+ * A reusable component for generating Flutter GridView layouts
+ */
+class GridViewBuilder {
+  constructor(containerSelector, options = {}) {
+    this.container = typeof containerSelector === 'string'
+      ? document.querySelector(containerSelector)
+      : containerSelector;
+
+    if (!this.container) {
+      throw new Error('Container element not found');
+    }
+
+    // Default configuration
+    this.state = {
+      columns: options.defaultColumns || 3,
+      mainSpacing: options.defaultMainSpacing || 16,
+      crossSpacing: options.defaultCrossSpacing || 16,
+      aspectRatio: options.defaultAspectRatio || 1.0,
+      padding: options.defaultPadding || 16,
+      itemCount: options.defaultItemCount || 12
+    };
+
+    this.options = {
+      showControls: options.showControls !== false,
+      showCodeOutput: options.showCodeOutput !== false,
+      showPreview: options.showPreview !== false,
+      theme: options.theme || 'light',
+      onCodeGenerated: options.onCodeGenerated || null,
+      ...options
+    };
+
+    this.init();
+  }
+
+  init() {
+    this.render();
+    this.attachEventListeners();
+    this.updateGrid();
+    this.updateCode();
+  }
+
+  render() {
+    // Use container height if it has explicit height, otherwise calculate based on viewport
+    const containerHeight = this.container.style.height ? '100%' : 'calc(100vh - 120px)';
+    const html = `
+      <div class="gridview-builder-widget" data-theme="${this.options.theme}">
+        <div class="flex gap-4" style="height: ${containerHeight};">
+          ${this.options.showControls ? this.renderControls() : ''}
+          <div class="flex-1 flex flex-col gap-4 overflow-auto">
+            ${this.options.showPreview ? this.renderPreview() : ''}
+            ${this.options.showCodeOutput ? this.renderCodeOutput() : ''}
+          </div>
+        </div>
+      </div>
+    `;
+    this.container.innerHTML = html;
+  }
+
+  renderControls() {
+    return `
+      <div class="w-80 flex flex-col gap-4 overflow-auto">
+        <div class="text-center mb-2">
+          <h3 class="text-xl font-bold text-primary">GridView Controls</h3>
+          <p class="text-sm opacity-70">Adjust parameters to see live preview</p>
+        </div>
+
+        <div class="card bg-base-200 shadow-sm">
+          <div class="card-body p-4 gap-4">
+            ${this.renderSlider('columns', 'Cross Axis Count', 2, 6, 1, 'primary', 'Number of columns in the grid')}
+            ${this.renderSlider('mainSpacing', 'Main Axis Spacing', 0, 40, 1, 'secondary', 'Vertical spacing between items')}
+            ${this.renderSlider('crossSpacing', 'Cross Axis Spacing', 0, 40, 1, 'secondary', 'Horizontal spacing between items')}
+            ${this.renderSlider('aspectRatio', 'Child Aspect Ratio', 0.5, 2, 0.1, 'accent', 'Width to height ratio of each cell')}
+            ${this.renderSlider('padding', 'Padding', 0, 40, 1, 'info', 'Padding around the entire grid')}
+            ${this.renderSlider('itemCount', 'Item Count', 4, 24, 1, '', 'Number of items to display')}
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block copy-code-btn">📋 Copy Flutter Code</button>
+      </div>
+    `;
+  }
+
+  renderSlider(key, label, min, max, step, colorClass, description) {
+    const badgeClass = colorClass ? `badge-${colorClass}` : '';
+    const rangeClass = colorClass ? `range-${colorClass}` : '';
+    return `
+      <div>
+        <label class="label">
+          <span class="label-text font-semibold">${label}</span>
+          <span class="label-text-alt badge ${badgeClass}" data-value="${key}">${this.state[key]}</span>
+        </label>
+        <input type="range" min="${min}" max="${max}" step="${step}" value="${this.state[key]}"
+               class="range ${rangeClass} range-sm" data-slider="${key}">
+        <div class="text-xs opacity-60 mt-1">${description}</div>
+      </div>
+    `;
+  }
+
+  renderPreview() {
+    return `
+      <div class="card bg-base-200 shadow-sm" style="flex: 2;">
+        <div class="card-body p-4 flex flex-col" style="height: 100%;">
+          <h4 class="font-bold text-lg mb-2">Live Preview</h4>
+          <div class="grid-preview bg-base-100 rounded-lg overflow-auto flex-1" style="padding: ${this.state.padding}px;">
+            <div class="grid-container"></div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  renderCodeOutput() {
+    return `
+      <div class="card bg-base-200 shadow-sm" style="flex: 1;">
+        <div class="card-body p-4 flex flex-col" style="height: 100%;">
+          <h4 class="font-bold text-lg mb-2">Generated Flutter Code</h4>
+          <pre class="code-output bg-base-300 p-4 rounded-lg text-sm overflow-x-auto flex-1"><code></code></pre>
+        </div>
+      </div>
+    `;
+  }
+
+  attachEventListeners() {
+    // Slider event listeners
+    const sliders = this.container.querySelectorAll('[data-slider]');
+    sliders.forEach(slider => {
+      slider.addEventListener('input', (e) => {
+        const key = e.target.dataset.slider;
+        const value = parseFloat(e.target.value);
+        this.updateState(key, value);
+      });
+    });
+
+    // Copy button
+    const copyBtn = this.container.querySelector('.copy-code-btn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', () => this.copyCode());
+    }
+  }
+
+  updateState(key, value) {
+    this.state[key] = value;
+
+    // Update display value
+    const valueDisplay = this.container.querySelector(`[data-value="${key}"]`);
+    if (valueDisplay) {
+      valueDisplay.textContent = value;
+    }
+
+    this.updateGrid();
+    this.updateCode();
+  }
+
+  updateGrid() {
+    const gridContainer = this.container.querySelector('.grid-container');
+    if (!gridContainer) return;
+
+    const colors = [
+      'bg-primary text-primary-content',
+      'bg-secondary text-secondary-content',
+      'bg-accent text-accent-content'
+    ];
+
+    let html = `<div style="display: grid; grid-template-columns: repeat(${this.state.columns}, 1fr); gap: ${this.state.mainSpacing}px;">`;
+    for (let i = 1; i <= this.state.itemCount; i++) {
+      const colorClass = colors[(i - 1) % 3];
+      html += `<div class="${colorClass} rounded-lg flex items-center justify-center font-bold" style="aspect-ratio: ${this.state.aspectRatio};">${i}</div>`;
+    }
+    html += '</div>';
+    gridContainer.innerHTML = html;
+
+    const gridPreview = this.container.querySelector('.grid-preview');
+    if (gridPreview) {
+      gridPreview.style.padding = `${this.state.padding}px`;
+    }
+  }
+
+  updateCode() {
+    const code = this.generateFlutterCode();
+    const codeOutput = this.container.querySelector('.code-output code');
+    if (codeOutput) {
+      codeOutput.textContent = code;
+    }
+
+    // Callback for external usage
+    if (this.options.onCodeGenerated) {
+      this.options.onCodeGenerated(code);
+    }
+  }
+
+  generateFlutterCode() {
+    return `GridView.count(
+  crossAxisCount: ${this.state.columns},
+  mainAxisSpacing: ${this.state.mainSpacing},
+  crossAxisSpacing: ${this.state.crossSpacing},
+  childAspectRatio: ${this.state.aspectRatio},
+  padding: EdgeInsets.all(${this.state.padding}),
+  children: List.generate(${this.state.itemCount}, (index) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.blue,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Center(
+        child: Text(
+          '\${index + 1}',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }),
+)`;
+  }
+
+  copyCode() {
+    const code = this.generateFlutterCode();
+    navigator.clipboard.writeText(code).then(() => {
+      const btn = this.container.querySelector('.copy-code-btn');
+      if (btn) {
+        const originalText = btn.textContent;
+        btn.textContent = '✓ Code Copied to Clipboard!';
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-success');
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.classList.remove('btn-success');
+          btn.classList.add('btn-primary');
+        }, 2000);
+      }
+    });
+  }
+
+  getCode() {
+    return this.generateFlutterCode();
+  }
+
+  getState() {
+    return { ...this.state };
+  }
+
+  setState(newState) {
+    Object.assign(this.state, newState);
+    this.updateGrid();
+    this.updateCode();
+
+    // Update slider positions and value displays
+    Object.keys(newState).forEach(key => {
+      const slider = this.container.querySelector(`[data-slider="${key}"]`);
+      if (slider) {
+        slider.value = this.state[key];
+      }
+      const valueDisplay = this.container.querySelector(`[data-value="${key}"]`);
+      if (valueDisplay) {
+        valueDisplay.textContent = this.state[key];
+      }
+    });
+  }
+}
+
+// Export for module systems and global scope
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = GridViewBuilder;
+}
+if (typeof window !== 'undefined') {
+  window.GridViewBuilder = GridViewBuilder;
+}

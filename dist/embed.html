@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flutter GridView Builder - Embed</title>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@5.1.29/daisyui.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body class="bg-base-100">
+  <div id="gridview-builder" style="height: 100%;"></div>
+
+  <script src="js/gridview-builder.js"></script>
+  <script>
+    // Initialize the GridView Builder for embedding
+    new GridViewBuilder('#gridview-builder', {
+      showControls: true,
+      showPreview: true,
+      showCodeOutput: true,
+      theme: 'light'
+    });
+  </script>
+</body>
+</html>

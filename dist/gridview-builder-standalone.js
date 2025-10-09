@@ -250,29 +250,35 @@
     }
 
     generateCountCode() {
-      return `GridView.count(
-  crossAxisCount: ${this.state.columns},
-  mainAxisSpacing: ${this.state.mainSpacing},
-  crossAxisSpacing: ${this.state.crossSpacing},
-  childAspectRatio: ${this.state.aspectRatio},
-  padding: EdgeInsets.all(${this.state.padding}),
-  children: List.generate(${this.state.itemCount}, (index) {
-    return Container(
+      // Generate static children array
+      const children = [];
+      for (let i = 1; i <= this.state.itemCount; i++) {
+        children.push(`    Container(
       decoration: BoxDecoration(
         color: Colors.blue,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Center(
         child: Text(
-          '\${index + 1}',
+          '${i}',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
         ),
       ),
-    );
-  }),
+    ),`);
+      }
+
+      return `GridView.count(
+  crossAxisCount: ${this.state.columns},
+  mainAxisSpacing: ${this.state.mainSpacing},
+  crossAxisSpacing: ${this.state.crossSpacing},
+  childAspectRatio: ${this.state.aspectRatio},
+  padding: EdgeInsets.all(${this.state.padding}),
+  children: [
+${children.join('\n')}
+  ],
 )`;
     }
 

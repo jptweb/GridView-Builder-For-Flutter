@@ -47,7 +47,8 @@
         aspectRatio: options.defaultAspectRatio || 1.0,
         padding: options.defaultPadding || 16,
         itemCount: options.defaultItemCount || 12,
-        codeStyle: options.defaultCodeStyle || 'count' // 'count' or 'builder'
+        codeStyle: options.defaultCodeStyle || 'count', // 'count' or 'builder'
+        contentTemplate: options.defaultContentTemplate || 'container' // Content template type
       };
 
       this.options = {
@@ -114,6 +115,21 @@
                 </div>
                 <div class="text-xs opacity-60 mt-1">
                   ${this.state.codeStyle === 'count' ? 'Best for static layouts' : 'Best for dynamic data lists'}
+                </div>
+              </div>
+              <div>
+                <label class="label">
+                  <span class="label-text font-semibold">Content Template</span>
+                </label>
+                <select class="select select-bordered select-sm w-full" data-template-select>
+                  <option value="container" ${this.state.contentTemplate === 'container' ? 'selected' : ''}>Container (Default)</option>
+                  <option value="gridtile" ${this.state.contentTemplate === 'gridtile' ? 'selected' : ''}>GridTile (Image Gallery)</option>
+                  <option value="card" ${this.state.contentTemplate === 'card' ? 'selected' : ''}>Card (Icon + Text)</option>
+                  <option value="stack" ${this.state.contentTemplate === 'stack' ? 'selected' : ''}>Stack (Image Overlay)</option>
+                  <option value="product" ${this.state.contentTemplate === 'product' ? 'selected' : ''}>Product Card</option>
+                </select>
+                <div class="text-xs opacity-60 mt-1" data-template-description>
+                  ${this.getTemplateDescription(this.state.contentTemplate)}
                 </div>
               </div>
               <div class="divider my-1"></div>
@@ -195,10 +211,34 @@
         });
       });
 
+      // Content template dropdown
+      const templateSelect = this.container.querySelector('[data-template-select]');
+      if (templateSelect) {
+        templateSelect.addEventListener('change', (e) => {
+          this.updateState('contentTemplate', e.target.value);
+          // Update the description text
+          const description = this.container.querySelector('[data-template-description]');
+          if (description) {
+            description.textContent = this.getTemplateDescription(e.target.value);
+          }
+        });
+      }
+
       const copyBtn = this.container.querySelector('.copy-code-btn');
       if (copyBtn) {
         copyBtn.addEventListener('click', () => this.copyCode());
       }
+    }
+
+    getTemplateDescription(template) {
+      const descriptions = {
+        'container': 'Simple colored box - good for basic layouts',
+        'gridtile': 'Image with header/footer - perfect for galleries',
+        'card': 'Icon and text card - ideal for dashboards',
+        'stack': 'Image with overlay - great for portfolios',
+        'product': 'Product card with image and price - for e-commerce'
+      };
+      return descriptions[template] || '';
     }
 
     updateState(key, value) {
@@ -213,20 +253,58 @@
       this.updateCode();
     }
 
+    generatePreviewItem(index, template) {
+      const aspectRatio = this.state.aspectRatio;
+
+      switch(template) {
+        case 'container':
+          const colors = ['bg-primary', 'bg-secondary', 'bg-accent'];
+          const colorClass = colors[(index - 1) % 3];
+          return `<div class="${colorClass} text-white rounded-lg flex items-center justify-center font-bold" style="aspect-ratio: ${aspectRatio};">${index}</div>`;
+
+        case 'gridtile':
+          return `<div class="relative bg-base-300 rounded-lg overflow-hidden" style="aspect-ratio: ${aspectRatio};">
+            <div class="w-full h-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-4xl text-white">📷</div>
+            <div class="absolute top-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs px-2 py-1">Item ${index}</div>
+          </div>`;
+
+        case 'card':
+          return `<div class="card bg-base-100 shadow-md" style="aspect-ratio: ${aspectRatio};">
+            <div class="card-body p-2 flex flex-col items-center justify-center">
+              <div class="text-4xl">⭐</div>
+              <div class="text-sm font-bold mt-1">Item ${index}</div>
+            </div>
+          </div>`;
+
+        case 'stack':
+          return `<div class="relative bg-base-300 rounded-lg overflow-hidden" style="aspect-ratio: ${aspectRatio};">
+            <div class="w-full h-full bg-gradient-to-br from-accent to-secondary flex items-center justify-center text-4xl text-white">🖼️</div>
+            <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs px-2 py-1">Item ${index}</div>
+          </div>`;
+
+        case 'product':
+          return `<div class="card bg-base-100 shadow-md rounded-lg overflow-hidden" style="aspect-ratio: ${aspectRatio};">
+            <div class="flex flex-col h-full">
+              <div class="flex-1 bg-gradient-to-br from-info to-primary flex items-center justify-center text-4xl text-white">🛍️</div>
+              <div class="p-2 text-xs">
+                <div class="font-bold">Product ${index}</div>
+                <div class="text-success font-bold">$${index}0.00</div>
+              </div>
+            </div>
+          </div>`;
+
+        default:
+          return this.generatePreviewItem(index, 'container');
+      }
+    }
+
     updateGrid() {
       const gridContainer = this.container.querySelector('.grid-container');
       if (!gridContainer) return;
 
-      const colors = [
-        'bg-primary text-primary-content',
-        'bg-secondary text-secondary-content',
-        'bg-accent text-accent-content'
-      ];
-
       let html = `<div style="display: grid; grid-template-columns: repeat(${this.state.columns}, 1fr); gap: ${this.state.mainSpacing}px;">`;
       for (let i = 1; i <= this.state.itemCount; i++) {
-        const colorClass = colors[(i - 1) % 3];
-        html += `<div class="${colorClass} rounded-lg flex items-center justify-center font-bold" style="aspect-ratio: ${this.state.aspectRatio};">${i}</div>`;
+        html += this.generatePreviewItem(i, this.state.contentTemplate);
       }
       html += '</div>';
       gridContainer.innerHTML = html;
@@ -249,25 +327,126 @@
       }
     }
 
+    generateItemTemplate(templateType, indexVar, indent = '    ') {
+      switch(templateType) {
+        case 'container':
+          return `${indent}Container(
+${indent}  decoration: BoxDecoration(
+${indent}    color: Colors.blue,
+${indent}    borderRadius: BorderRadius.circular(8),
+${indent}  ),
+${indent}  child: Center(
+${indent}    child: Text(
+${indent}      '${indexVar}',
+${indent}      style: TextStyle(
+${indent}        color: Colors.white,
+${indent}        fontWeight: FontWeight.bold,
+${indent}      ),
+${indent}    ),
+${indent}  ),
+${indent})`;
+
+        case 'gridtile':
+          return `${indent}GridTile(
+${indent}  header: GridTileBar(
+${indent}    backgroundColor: Colors.black45,
+${indent}    title: Text('Item ${indexVar}'),
+${indent}  ),
+${indent}  child: Image.network(
+${indent}    'https://via.placeholder.com/300',
+${indent}    fit: BoxFit.cover,
+${indent}  ),
+${indent})`;
+
+        case 'card':
+          return `${indent}Card(
+${indent}  elevation: 4,
+${indent}  child: Column(
+${indent}    mainAxisAlignment: MainAxisAlignment.center,
+${indent}    children: [
+${indent}      Icon(Icons.star, size: 48, color: Colors.amber),
+${indent}      SizedBox(height: 8),
+${indent}      Text(
+${indent}        'Item ${indexVar}',
+${indent}        style: TextStyle(fontWeight: FontWeight.bold),
+${indent}      ),
+${indent}    ],
+${indent}  ),
+${indent})`;
+
+        case 'stack':
+          return `${indent}Stack(
+${indent}  fit: StackFit.expand,
+${indent}  children: [
+${indent}    Image.network(
+${indent}      'https://via.placeholder.com/300',
+${indent}      fit: BoxFit.cover,
+${indent}    ),
+${indent}    Positioned(
+${indent}      bottom: 0,
+${indent}      left: 0,
+${indent}      right: 0,
+${indent}      child: Container(
+${indent}        color: Colors.black54,
+${indent}        padding: EdgeInsets.all(8),
+${indent}        child: Text(
+${indent}          'Item ${indexVar}',
+${indent}          style: TextStyle(
+${indent}            color: Colors.white,
+${indent}            fontWeight: FontWeight.bold,
+${indent}          ),
+${indent}        ),
+${indent}      ),
+${indent}    ),
+${indent}  ],
+${indent})`;
+
+        case 'product':
+          return `${indent}Card(
+${indent}  clipBehavior: Clip.antiAlias,
+${indent}  child: Column(
+${indent}    crossAxisAlignment: CrossAxisAlignment.stretch,
+${indent}    children: [
+${indent}      Expanded(
+${indent}        child: Image.network(
+${indent}          'https://via.placeholder.com/300',
+${indent}          fit: BoxFit.cover,
+${indent}        ),
+${indent}      ),
+${indent}      Padding(
+${indent}        padding: EdgeInsets.all(8),
+${indent}        child: Column(
+${indent}          crossAxisAlignment: CrossAxisAlignment.start,
+${indent}          children: [
+${indent}            Text(
+${indent}              'Product ${indexVar}',
+${indent}              style: TextStyle(fontWeight: FontWeight.bold),
+${indent}            ),
+${indent}            SizedBox(height: 4),
+${indent}            Text(
+${indent}              '\\\$${indexVar}0.00',
+${indent}              style: TextStyle(
+${indent}                color: Colors.green,
+${indent}                fontWeight: FontWeight.bold,
+${indent}              ),
+${indent}            ),
+${indent}          ],
+${indent}        ),
+${indent}      ),
+${indent}    ],
+${indent}  ),
+${indent})`;
+
+        default:
+          return this.generateItemTemplate('container', indexVar, indent);
+      }
+    }
+
     generateCountCode() {
       // Generate static children array
       const children = [];
       for (let i = 1; i <= this.state.itemCount; i++) {
-        children.push(`    Container(
-      decoration: BoxDecoration(
-        color: Colors.blue,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Center(
-        child: Text(
-          '${i}',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    ),`);
+        children.push(this.generateItemTemplate(this.state.contentTemplate, i, '    ') + ',');
       }
 
       return `GridView.count(
@@ -283,6 +462,7 @@ ${children.join('\n')}
     }
 
     generateBuilderCode() {
+      const itemWidget = this.generateItemTemplate(this.state.contentTemplate, '\\${index + 1}', '    ');
       return `GridView.builder(
   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
     crossAxisCount: ${this.state.columns},
@@ -293,21 +473,7 @@ ${children.join('\n')}
   padding: EdgeInsets.all(${this.state.padding}),
   itemCount: ${this.state.itemCount},
   itemBuilder: (context, index) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.blue,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Center(
-        child: Text(
-          '\${index + 1}',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
+    return ${itemWidget};
   },
 )`;
     }

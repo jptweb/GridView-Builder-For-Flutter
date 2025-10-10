@@ -1,15 +1,15 @@
-# GridView-Builder-For-Flutter
-This is a tool inspired by HTML / CSS Grid builders that generate the CSS and HTML you need to add to a website to create a desired look. It is meant to be no a code way to quickly generate the dart you need for your flutter project. It was built also as a way to experiment with the new Imagination tool of Claude!
-
-# Flutter GridView Builder
+# GridView Builder For Flutter
 
 A visual tool for experimenting with Flutter GridView layouts. Adjust parameters in real-time and instantly see how your grid looks, then copy the generated Dart code directly into your Flutter project.
 
+This tool was inspired by HTML/CSS Grid builders and built as a way to experiment with Claude's Imagination tool!
 
 ## 🚀 Features
 
 - **Real-time Visual Preview** - See your grid layout update instantly as you adjust parameters
 - **Interactive Controls** - Sliders for all major GridView properties
+- **Code Style Toggle** - Choose between `GridView.count` (static) or `GridView.builder` (dynamic)
+- **Content Templates** - 5 pre-built item templates (Container, GridTile, Card, Stack, Product Card)
 - **Copy-Ready Flutter Code** - Generated Dart code ready to paste into your project
 - **No Installation Required** - Runs entirely in your browser
 - **Beginner Friendly** - Great for learning Flutter GridView concepts
@@ -23,14 +23,25 @@ A visual tool for experimenting with Flutter GridView layouts. Adjust parameters
 
 ## 🔧 Parameters
 
-| Parameter | Description | Range |
+| Parameter | Description | Options/Range |
 |-----------|-------------|-------|
+| **Code Style** | GridView type | `GridView.count` (static) or `GridView.builder` (dynamic) |
+| **Content Template** | Item widget type | Container, GridTile, Card, Stack, Product Card |
 | **Cross Axis Count** | Number of columns in the grid | 2-6 |
 | **Main Axis Spacing** | Vertical spacing between items | 0-40px |
 | **Cross Axis Spacing** | Horizontal spacing between items | 0-40px |
 | **Child Aspect Ratio** | Width to height ratio of each cell | 0.5-2.0 |
 | **Padding** | Padding around the entire grid | 0-40px |
 | **Item Count** | Number of items to display | 4-24 |
+
+### Content Templates
+
+Choose from 5 pre-built item templates:
+- **Container** - Simple colored box (default)
+- **GridTile** - Image with header/footer, perfect for photo galleries
+- **Card** - Icon and text card, ideal for dashboards
+- **Stack** - Image with overlay text, great for portfolios
+- **Product Card** - E-commerce style with image and price
 
 ## 🌐 Demo
 
@@ -83,21 +94,26 @@ See [WORDPRESS-EMBED.md](WORDPRESS-EMBED.md) for detailed instructions on embedd
 
 ## 💻 Usage
 
-1. **Adjust Sliders** - Move the sliders to change grid parameters
-2. **Watch Preview** - See your grid update in real-time
-3. **Copy Code** - Click "Copy Flutter Code" button
-4. **Paste in Flutter** - Use the generated code in your Flutter project
+1. **Select Code Style** - Choose between `GridView.count` or `GridView.builder`
+2. **Pick Template** - Choose a content template (Container, GridTile, Card, Stack, Product Card)
+3. **Adjust Sliders** - Move the sliders to change grid parameters
+4. **Watch Preview** - See your grid update in real-time
+5. **Copy Code** - Click "Copy Flutter Code" button
+6. **Paste in Flutter** - Use the generated code in your Flutter project
 
-### Example Output
+### Example Output (GridView.builder with Container template)
 
 ```dart
-GridView.count(
-  crossAxisCount: 3,
-  mainAxisSpacing: 16,
-  crossAxisSpacing: 16,
-  childAspectRatio: 1.0,
+GridView.builder(
+  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+    crossAxisCount: 3,
+    mainAxisSpacing: 16,
+    crossAxisSpacing: 16,
+    childAspectRatio: 1.0,
+  ),
   padding: EdgeInsets.all(16),
-  children: List.generate(12, (index) {
+  itemCount: 12,
+  itemBuilder: (context, index) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.blue,
@@ -113,7 +129,34 @@ GridView.count(
         ),
       ),
     );
-  }),
+  },
+)
+```
+
+### Example Output (GridView.builder with GridTile template)
+
+```dart
+GridView.builder(
+  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+    crossAxisCount: 3,
+    mainAxisSpacing: 16,
+    crossAxisSpacing: 16,
+    childAspectRatio: 1.0,
+  ),
+  padding: EdgeInsets.all(16),
+  itemCount: 12,
+  itemBuilder: (context, index) {
+    return GridTile(
+      header: GridTileBar(
+        backgroundColor: Colors.black45,
+        title: Text('Item ${index + 1}'),
+      ),
+      child: Image.network(
+        'https://via.placeholder.com/300',
+        fit: BoxFit.cover,
+      ),
+    );
+  },
 )
 ```
 
@@ -121,17 +164,19 @@ GridView.count(
 
 ```
 flutter-gridview-builder/
-├── src/                    # Source files
+├── src/                    # Source files (edit these)
 │   ├── index.html         # Standalone application
 │   ├── embed.html         # Embeddable iframe version
 │   └── js/
 │       ├── gridview-builder.js            # Core widget (modular)
 │       └── gridview-builder-standalone.js # All-in-one widget
-├── dist/                  # Built/minified files (generated)
+├── dist/                  # Built/minified files (auto-generated)
 ├── docs/                  # GitHub Pages deployment
-├── gridview-builder-all-in-one.html  # Legacy single-file version
+├── gridview-builder-all-in-one.html  # Root-level version (references src/)
 ├── package.json          # Build scripts and dependencies
+├── README.md            # This file
 ├── CLAUDE.md            # AI assistant guidance
+├── CONTRIBUTING.md      # Developer contribution guide
 └── WORDPRESS-EMBED.md   # Embedding instructions
 ```
 
@@ -146,12 +191,27 @@ flutter-gridview-builder/
 
 ## 🎨 Customization
 
-The tool uses placeholder colors (primary, secondary, accent). In your Flutter app:
+The generated code provides a starting point. In your Flutter app:
 
-- Replace `Colors.blue` with your desired color
-- Customize the `Container` decoration
-- Add your own child widgets instead of `Text`
-- Modify the `List.generate` logic for dynamic content
+- **Replace placeholder URLs** - Change `https://via.placeholder.com/300` to your image URLs
+- **Customize colors** - Replace `Colors.blue`, `Colors.amber`, etc. with your theme colors
+- **Modify decorations** - Adjust `BoxDecoration`, `borderRadius`, `elevation`, etc.
+- **Add your data** - Replace static values with dynamic data from your models
+- **Extend templates** - Use the generated code as a base and add your own widgets
+
+Example customization:
+```dart
+// Change from placeholder to real data
+GridTile(
+  header: GridTileBar(
+    title: Text(product.name),  // Your data
+  ),
+  child: Image.network(
+    product.imageUrl,  // Your image URL
+    fit: BoxFit.cover,
+  ),
+)
+```
 
 ## 📱 Flutter Integration
 

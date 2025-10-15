@@ -45,13 +45,13 @@ Choose from 5 pre-built item templates:
 
 ## 🌐 Demo
 
-Visit the live demo: [Flutter GridView Builder Demo] (https://jptweb.github.io/GridView-Builder-For-Flutter/gridview-builder-all-in-one.html)
+Visit the live demo: [Flutter GridView Builder Demo](https://jptweb.github.io/GridView-Builder-For-Flutter/gridview-builder-all-in-one.html)
 
 ## 📦 Installation & Usage
 
 ### Option 1: Use Online
 Simply visit the hosted version - no installation needed!
-- **Live Demo**: [Flutter GridView Builder](https://your-demo-url.com)
+- **Live Demo**: [Flutter GridView Builder](https://jptweb.github.io/GridView-Builder-For-Flutter/gridview-builder-all-in-one.html)
 
 ### Option 2: Download Standalone Version
 Download `gridview-builder-all-in-one.html` and open it in your browser - no build step required!

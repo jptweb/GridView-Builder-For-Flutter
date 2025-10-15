@@ -45,7 +45,7 @@ Choose from 5 pre-built item templates:
 
 ## 🌐 Demo
 
-Visit the live demo: [Flutter GridView Builder](https://your-demo-url.com)
+Visit the live demo: [Flutter GridView Builder Demo] (https://jptweb.github.io/GridView-Builder-For-Flutter/gridview-builder-all-in-one.html)
 
 ## 📦 Installation & Usage
 
